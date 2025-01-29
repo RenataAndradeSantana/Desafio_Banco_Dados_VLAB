@@ -5,9 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
 
 /**
  * @OA\Info(
@@ -29,8 +27,8 @@ Route::get('/', function () {
  *     description="Gerenciamento de usuários"
  * )
  */
-
-Route::apiResource('usuarios', UserController::class);
+Route::apiResource('/usuarios', [UserController::class, 'index']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']); // Deletar usuário
 
 // Rotas para categorias
 /**
@@ -39,7 +37,10 @@ Route::apiResource('usuarios', UserController::class);
  *     description="Gerenciamento de categorias"
  * )
  */
-Route::apiResource('categorias', CategoryController::class);
+
+Route::apiResource('/categorias', [CategoryController::class, 'index']);
+oute::post('/categorias', [CategoryController::class, 'store']); // Criar categoria
+Route::delete('/categorias/{id}', [CategoryController::class, 'destroy']); // Deletar categoria
 
 // Rotas para transações
 /**
@@ -48,5 +49,6 @@ Route::apiResource('categorias', CategoryController::class);
  *     description="Gerenciamento de transações"
  * )
  */
-Route::apiResource('transacoes', TransactionController::class);
-
+Route::apiResource('/transacoes', [TransactionController::class, 'index']);
+Route::post('/transacoes', [TransactionController::class, 'store']); // Criar transação
+Route::delete('/transacoes/{id}', [TransactionController::class, 'destroy']); // Deletar transação
