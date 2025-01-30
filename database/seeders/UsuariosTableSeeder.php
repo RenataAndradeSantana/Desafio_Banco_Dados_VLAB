@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Hash; # Faz com a senha na tabela usuários não 
 
 class UsuariosTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+   
     public function run(): void
     {
         DB::table('usuarios')->insert([

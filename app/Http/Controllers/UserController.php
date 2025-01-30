@@ -9,13 +9,37 @@ use Illuminate\Support\Facades\Hash;
 use OpenApi\Annotations as OA;
 use App\Http\Controllers\Controller;
 
+/**
+ * @OA\Tag(name="Usuários", description="Gerenciamento de usuários")
+ */
 class UserController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/usuarios",
+     *     summary="Listar todos os usuários",
+     *     tags={"Usuários"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Lista de usuários",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/User"))
+     *     )
+     * )
+     */
+    public function index()
+    {
+        // Retorna todos os usuários, incluindo as colunas personalizadas
+        $usuarios = User::select('id', 'name', 'cpf', 'email', 'data_criacao', 'data_atualizacao')
+                        ->get();
+
+        return response()->json($usuarios);
+    }
+
     /**
      * @OA\Post(
      *     path="/usuarios",
      *     summary="Criar um novo usuário",
-     *     description="Cria um novo usuário na aplicação",
+     *     tags={"Usuários"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/User")
@@ -27,10 +51,8 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Validação falhou",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string")
-     *         )
+     *         description="Erro de validação",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string"))
      *     )
      * )
      */
@@ -52,16 +74,36 @@ class UserController extends Controller
             'data_atualizacao' => now(),
         ]);
 
-        return response()->json($user, 201); // O 'id' será gerado automaticamente
+        return response()->json($user, 201);
     }
 
-    public function index()
-    {
-        // Retorna todos os usuários
-        $users = User::all();
-        return response()->json($users);
-    }
-
+    /**
+     * @OA\Put(
+     *     path="/usuarios/{id}",
+     *     summary="Atualizar um usuário",
+     *     tags={"Usuários"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID do usuário",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Usuário atualizado com sucesso",
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Usuário não encontrado"
+     *     )
+     * )
+     */
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -84,13 +126,33 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/usuarios/{id}",
+     *     summary="Deletar um usuário",
+     *     tags={"Usuários"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID do usuário",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Usuário deletado com sucesso",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string"))
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Usuário não encontrado"
+     *     )
+     * )
+     */
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-
-        // Deleta todas as transações relacionadas ao usuário
         Transaction::where('usuarios_id', $id)->delete();
-
         $user->delete();
 
         return response()->json(['message' => 'Usuário deletado com sucesso']);
